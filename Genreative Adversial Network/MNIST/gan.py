@@ -20,7 +20,9 @@ X_train = (X_train - 127.5) / 127.5   # Normalize to [-1,1]
 
 BUFFER_SIZE = 60000
 BATCH_SIZE = 256
-train_dataset = tf.data.Dataset.from_tensor_slices(X_train).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+train_dataset = tf.data.Dataset.from_tensor_slices(X_train).shuffle(BUFFER_SIZE).batch(BATCH_SIZE,drop_remainder=True).repeat()
+
+steps_per_epoch = X_train.shape[0] // BATCH_SIZE
 
 # -----------------------
 # Generator
@@ -80,27 +82,28 @@ generator_optimizer = tf.keras.optimizers.Adam(1e-4)
 discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
 # -----------------------
-# Checkpoints
+# Checkpoints with Manager
 # -----------------------
-checkpoint_dir = "./gan_checkpoints"
+checkpoint_dir = "./checkpoints"
 os.makedirs(checkpoint_dir, exist_ok=True)
-checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
 
 checkpoint = tf.train.Checkpoint(generator=generator,
                                  discriminator=discriminator,
                                  generator_optimizer=generator_optimizer,
                                  discriminator_optimizer=discriminator_optimizer)
 
+# Keep only the latest 3 checkpoints
+manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
+
 # Restore latest if exists
-latest_ckpt = tf.train.latest_checkpoint(checkpoint_dir)
-if latest_ckpt:
-    print("Restoring from", latest_ckpt)
-    checkpoint.restore(latest_ckpt)
+if manager.latest_checkpoint:
+    print("Restoring from", manager.latest_checkpoint)
+    checkpoint.restore(manager.latest_checkpoint)
 
 # -----------------------
 # Training Loop
 # -----------------------
-EPOCHS = 50
+EPOCHS = 100
 noise_dim = 100
 num_examples_to_generate = 16
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
@@ -136,21 +139,26 @@ def generate_and_save_images(model, epoch, test_input):
 
     # Save images instead of just showing
     os.makedirs("generated_images", exist_ok=True)
-    plt.savefig(f"generated_images/epoch_{epoch+37:03d}.png")
+    plt.savefig(f"generated_images/epoch_{epoch:03d}.png")
     plt.close(fig)
 
 def train(dataset, epochs):
     for epoch in range(1, epochs+1):
-        for image_batch in dataset:
+        for step, image_batch in enumerate(dataset.take(steps_per_epoch)):
             gen_loss, disc_loss = train_step(image_batch)
 
         print(f"Epoch {epoch}/{epochs} | Gen Loss: {gen_loss:.4f} | Disc Loss: {disc_loss:.4f}")
         generate_and_save_images(generator, epoch, seed)
 
-        # Save checkpoint after each epoch
-        checkpoint.save(file_prefix=checkpoint_prefix)
+        # Save checkpoint every 5 epochs
+        if epoch % 5 == 0:
+            save_path = manager.save()
+            print(f"Checkpoint saved at {save_path}")
 
 # -----------------------
 # Run training
 # -----------------------
 train(train_dataset, EPOCHS)
+
+
+

@@ -1,0 +1,23 @@
+/home/adarsh/miniconda/envs/celeb_face_gan/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/home/adarsh/miniconda/envs/celeb_face_gan/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG19_Weights.IMAGENET1K_V1`. You can also use `weights=VGG19_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Epoch [0] Step [0/12662] D_loss: 1.3855 | G_loss: 0.0069
+Epoch [0] Step [200/12662] D_loss: 1.0522 | G_loss: 0.0076
+Epoch [0] Step [400/12662] D_loss: 0.6474 | G_loss: 0.0088
+Epoch [0] Step [600/12662] D_loss: 0.4433 | G_loss: 0.0056
+Epoch [0] Step [800/12662] D_loss: 0.9118 | G_loss: 0.0054
+Traceback (most recent call last):
+  File "/data1/adarsh/MODEL_TRAINING/GAN/SRGAN/train.py", line 97, in <module>
+    main()
+  File "/data1/adarsh/MODEL_TRAINING/GAN/SRGAN/train.py", line 89, in main
+    train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss,epoch)
+  File "/data1/adarsh/MODEL_TRAINING/GAN/SRGAN/train.py", line 33, in train_fn
+    loss_disc.backward()
+  File "/home/adarsh/miniconda/envs/celeb_face_gan/lib/python3.10/site-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/home/adarsh/miniconda/envs/celeb_face_gan/lib/python3.10/site-packages/torch/autograd/__init__.py", line 347, in backward
+    _engine_run_backward(
+  File "/home/adarsh/miniconda/envs/celeb_face_gan/lib/python3.10/site-packages/torch/autograd/graph.py", line 825, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+KeyboardInterrupt
